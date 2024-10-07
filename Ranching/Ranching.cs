@@ -62,6 +62,8 @@ public class Ranching : BaseUnityPlugin
 		ranching.Description.English("Reduces the time required to tame animals and increases item yield of tamed animals.");
 		ranching.Name.German("Viehhaltung");
 		ranching.Description.German("Reduziert die Zeit, die benötigt wird, um ein Tier zu zähmen und erhöht die Ausbeute von gezähmten Tieren.");
+  		ranching.Name.Chinese("畜牧");
+		ranching.Description.Chinese("减少驯服动物所需的时间，增加被驯服动物的产量");
 		ranching.Configurable = false;
 
 		serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
