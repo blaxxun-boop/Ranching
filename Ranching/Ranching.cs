@@ -17,7 +17,7 @@ namespace Ranching;
 public class Ranching : BaseUnityPlugin
 {
 	private const string ModName = "Ranching";
-	private const string ModVersion = "1.1.3";
+	private const string ModVersion = "1.1.4";
 	private const string ModGUID = "org.bepinex.plugins.ranching";
 
 	private static readonly ConfigSync configSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
