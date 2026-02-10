@@ -17,7 +17,7 @@ namespace Ranching;
 public class Ranching : BaseUnityPlugin
 {
 	private const string ModName = "Ranching";
-	private const string ModVersion = "1.1.3";
+	private const string ModVersion = "1.1.4";
 	private const string ModGUID = "org.bepinex.plugins.ranching";
 
 	private static readonly ConfigSync configSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -149,7 +149,7 @@ public class Ranching : BaseUnityPlugin
 
 		private static void Prefix(MonsterAI __instance)
 		{
-			if (__instance.m_character?.GetComponent<Tameable>()?.GetTameness() > 0)
+			if (__instance.m_character && __instance.m_character.GetComponent<Tameable>()?.GetTameness() > 0)
 			{
 				gettingTamed = true;
 			}
