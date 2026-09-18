@@ -17,7 +17,7 @@ namespace Ranching;
 public class Ranching : BaseUnityPlugin
 {
 	private const string ModName = "Ranching";
-	private const string ModVersion = "1.1.7";
+	private const string ModVersion = "1.1.8";
 	private const string ModGUID = "org.bepinex.plugins.ranching";
 
 	private static readonly ConfigSync configSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
@@ -28,6 +28,8 @@ public class Ranching : BaseUnityPlugin
 	private static ConfigEntry<int> ranchingFoodLevel = null!;
 	private static ConfigEntry<int> ranchingCalmLevel = null!;
 	private static ConfigEntry<int> ranchingPregnancyLevel = null!;
+	private static ConfigEntry<int> ranchingLevelUpLevel = null!;
+	private static ConfigEntry<int> levelUpChance = null!;
 	private static ConfigEntry<float> experienceGainedFactor = null!;
 	private static ConfigEntry<int> experienceLoss = null!;
 
@@ -71,6 +73,8 @@ public class Ranching : BaseUnityPlugin
 		ranchingFoodLevel = config("2 - Ranching", "Food Level Requirement", 10, new ConfigDescription("Minimum required skill level to see when tamed creatures will become hungry again. 0 is disabled.", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { ShowRangeAsPercent = false }));
 		ranchingCalmLevel = config("2 - Ranching", "Calming Level Requirement", 20, new ConfigDescription("Minimum required skill level to calm nearby taming creatures. 0 is disabled.", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { ShowRangeAsPercent = false }));
 		ranchingPregnancyLevel = config("2 - Ranching", "Pregnancy Level Requirement", 40, new ConfigDescription("Minimum required skill level to get pregnancy related information of tame creatures. 0 is disabled.", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { ShowRangeAsPercent = false }));
+		ranchingLevelUpLevel = config("2 - Ranching", "Level Up Level Requirement", 50, new ConfigDescription("Minimum required skill level to get a chance for offspring to be one level higher than their parent. 0 is disabled.", new AcceptableValueRange<int>(0, 100), new ConfigurationManagerAttributes { ShowRangeAsPercent = false }));
+		levelUpChance = config("2 - Ranching", "Level Up Chance", 5, new ConfigDescription("Chance for offspring to level up, if the level up level requirement is reached.", new AcceptableValueRange<int>(0, 100)));
 		experienceGainedFactor = config("3 - Other", "Skill Experience Gain Factor", 1f, new ConfigDescription("Factor for experience gained for the ranching skill.", new AcceptableValueRange<float>(0.01f, 5f)));
 		experienceGainedFactor.SettingChanged += (_, _) => ranching.SkillGainFactor = experienceGainedFactor.Value;
 		ranching.SkillGainFactor = experienceGainedFactor.Value;
@@ -234,6 +238,29 @@ public class Ranching : BaseUnityPlugin
 			__instance.CancelInvoke(nameof(Procreation.Procreate));
 			double time = ZNet.instance.GetTimeSeconds();
 			__instance.InvokeRepeating(nameof(Procreation.Procreate), (float)(__instance.m_updateInterval - time % __instance.m_updateInterval + ProcreationTimeOffset(__instance)) % __instance.m_updateInterval, __instance.m_updateInterval);
+		}
+	}
+
+	[HarmonyPatch(typeof(Procreation), nameof(Procreation.Procreate))]
+	private static class IncreaseLevel
+	{
+		private static int cachedLevel = -1;
+		private static void Prefix(Procreation __instance)
+		{
+			if (ranchingLevelUpLevel.Value > 0 && Player.m_localPlayer.GetSkillFactor("Ranching") >= ranchingLevelUpLevel.Value / 100f && Random.value <= levelUpChance.Value / 100f)
+			{
+				cachedLevel = __instance.m_minOffspringLevel;
+				__instance.m_minOffspringLevel = Math.Min(CreatureLevelControl.API.GetMaxLevel(), (__instance.m_character ? __instance.m_character.GetLevel() : Math.Max(1, __instance.m_minOffspringLevel)) + 1);
+			}
+		}
+
+		private static void Finalizer(Procreation __instance)
+		{
+			if (cachedLevel >= 0)
+			{
+				__instance.m_minOffspringLevel = cachedLevel;
+				cachedLevel = -1;
+			}
 		}
 	}
 }
