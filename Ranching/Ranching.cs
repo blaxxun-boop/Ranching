@@ -14,6 +14,7 @@ namespace Ranching;
 
 [BepInPlugin(ModGUID, ModName, ModVersion)]
 [BepInIncompatibility("org.bepinex.plugins.valheim_plus")]
+[BepInDependency("org.bepinex.plugins.creaturelevelcontrol", BepInDependency.DependencyFlags.SoftDependency)]
 public class Ranching : BaseUnityPlugin
 {
 	private const string ModName = "Ranching";
